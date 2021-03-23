@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# docker run --name my-ssdb -e SSDB_PORT=6789 -v /my/own/datadir:/var/lib/ssdb tsl0922/ssdb
+docker run -d --name my-ssdb -e SSDB_PORT=6789 -p 6789:6789 tsl0922/ssdb
