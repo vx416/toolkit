@@ -1,6 +1,0 @@
-#!/bin/bash
-
-docker run --platform=linux/x86_64 -d -p 3306:3306 \
-    -e MYSQL_ROOT_PASSWORD=my_secret -e MYSQL_DATABASE=local \
-    -e MYSQL_ONETIME_PASSWORD=false \
-    -v mysql_data:/var/lib/mysql --name mysqldb mysql/mysql-server

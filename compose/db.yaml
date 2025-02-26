@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql/mysql-server:8.0
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: local_test
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    ports:
+      - 127.0.0.1:3306:3306
+
+  mongo:
+    container_name: mongo
+    image: mongo:4.4.27
+    environment:
+      MONGODB_CLIENT_EXTRA_FLAGS: "--authenticationDatabase admin"
+      MONGO_INITDB_ROOT_USERNAME: test
+      MONGO_INITDB_ROOT_PASSWORD: test
+    ports:
+      - 27017:27017
+
+  redis:
+    container_name: redis
+    image: redis:6.2.6-alpine
+    ports:
+      - 127.0.0.1:6379:6379
+
+  postgres:
+    container_name: postgres
+    image: postgres:16
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: local_test
+    ports:
+      - 127.0.0.1:5432:5432
+
+networks:
+  host:
+    name: host
+    external: true
+  kafka:
+    driver: bridge
