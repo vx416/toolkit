@@ -1,0 +1,137 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  # 定義管理節點
+  config.vm.define "ceph-admin" do |admin|
+    admin.vm.box = "perk/ubuntu-2204-arm64"
+    admin.vm.hostname = "ceph-admin"
+    admin.vm.network "private_network", ip: "192.168.56.10"
+
+    admin.vm.provider "qemu" do |qemu|
+      qemu.ssh_port = "50022"
+      qemu.memory = "2048"
+      qemu.cpus = 1
+      qemu.arch = "aarch64"
+      qemu.machine = "virt"
+      qemu.cpu = "cortex-a57"
+    end
+
+    # 配置 SSH 密鑰以便管理節點可以訪問其他節點
+    admin.vm.provision "shell", inline: <<-SHELL
+      # 安裝 SSH 和其他依賴
+      sudo apt-get update
+      sudo apt-get install -y openssh-client openssh-server
+
+      # 生成 SSH 密鑰（如果不存在）
+      if [ ! -f ~/.ssh/id_rsa ]; then
+        ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+      fi
+
+      # 安裝 ceph-deploy
+      sudo apt-get install -y python3-pip
+      sudo pip3 install ceph-deploy
+    SHELL
+  end
+
+  # 定義第一個 Ceph 節點（MON、OSD、RGW）
+  config.vm.define "ceph-node1" do |node1|
+    node1.vm.box = "perk/ubuntu-2204-arm64"
+    node1.vm.hostname = "ceph-node1"
+    node1.vm.network "private_network", ip: "192.168.56.11"
+
+    node1.vm.provider "qemu" do |qemu|
+      qemu.ssh_port = "50023"
+      qemu.memory = "4096"
+      qemu.cpus = 2
+      qemu.arch = "aarch64"
+      qemu.machine = "virt"
+      qemu.cpu = "cortex-a57"
+
+      # 添加額外的磁盤用於 OSD
+      qemu.qemu_cmdline = [
+        "-drive", "file=/tmp/ceph-node1-osd0.qcow2,format=qcow2,if=virtio,size=10G"
+      ]
+    end
+
+    # 配置節點以接受管理節點的 SSH 訪問
+    node1.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get install -y openssh-server
+      sudo mkdir -p /var/local/osd0
+      sudo chown vagrant:vagrant /var/local/osd0
+    SHELL
+  end
+
+  # 定義第二個 Ceph 節點（MON、OSD、RGW）
+  config.vm.define "ceph-node2" do |node2|
+    node2.vm.box = "perk/ubuntu-2204-arm64"
+    node2.vm.hostname = "ceph-node2"
+    node2.vm.network "private_network", ip: "192.168.56.12"
+
+    node2.vm.provider "qemu" do |qemu|
+      qemu.ssh_port = "50024"
+      qemu.memory = "4096"
+      qemu.cpus = 2
+      qemu.arch = "aarch64"
+      qemu.machine = "virt"
+      qemu.cpu = "cortex-a57"
+
+      # 添加額外的磁盤用於 OSD
+      qemu.qemu_cmdline = [
+        "-drive", "file=/tmp/ceph-node2-osd1.qcow2,format=qcow2,if=virtio,size=10G"
+      ]
+    end
+
+    # 配置節點以接受管理節點的 SSH 訪問
+    node2.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get install -y openssh-server
+      sudo mkdir -p /var/local/osd1
+      sudo chown vagrant:vagrant /var/local/osd1
+    SHELL
+  end
+
+  # 在管理節點上配置 Ceph 集群
+  config.vm.provision "shell", inline: <<-SHELL
+    # 等待所有節點啟動並配置 SSH 密鑰
+    echo "Waiting for nodes to be ready..."
+    sleep 30
+
+    # 分發 SSH 公鑰到其他節點
+    ssh-keyscan -H 192.168.56.11 >> ~/.ssh/known_hosts
+    ssh-keyscan -H 192.168.56.12 >> ~/.ssh/known_hosts
+    sshpass -p "vagrant" ssh-copy-id -i ~/.ssh/id_rsa.pub vagrant@192.168.56.11
+    sshpass -p "vagrant" ssh-copy-id -i ~/.ssh/id_rsa.pub vagrant@192.168.56.12
+
+    # 創建 Ceph 集群目錄
+    mkdir ~/my-cluster
+    cd ~/my-cluster
+
+    # 使用 ceph-deploy 設置集群
+    ceph-deploy new ceph-node1 ceph-node2
+
+    # 修改 ceph.conf 以允許小型集群
+    echo "osd pool default size = 2" >> ceph.conf
+    echo "mon_clock_drift_allowed = 1" >> ceph.conf
+
+    # 安裝 Ceph 到所有節點
+    ceph-deploy install --release octopus ceph-admin ceph-node1 ceph-node2
+
+    # 設置 Monitor
+    ceph-deploy mon create-initial
+
+    # 準備和激活 OSD
+    ceph-deploy osd create ceph-node1 --data /var/local/osd0
+    ceph-deploy osd create ceph-node2 --data /var/local/osd1
+
+    # 分發配置文件和密鑰
+    ceph-deploy admin ceph-admin ceph-node1 ceph-node2
+
+    # 設置權限
+    sudo chmod +r /etc/ceph/ceph.client.admin.keyring
+
+    # 檢查集群狀態
+    ceph -s
+  SHELL
+end

@@ -78,5 +78,25 @@
     {
         "key": "shift+cmd+t",
         "command": "go.add.tags"
+    },
+    {
+        "key": "opt+down",
+        "command": "cursorMove",
+        "when": "editorTextFocus",
+        "args": {
+            "to": "down",
+            "by": "line",
+            "value": 10
+        }
+    },
+    {
+        "key": "shift+ctrl+up",
+        "command": "cursorMove",
+        "when": "editorTextFocus",
+        "args": {
+            "to": "up",
+            "by": "line",
+            "value": 10
+        }
     }
 ]

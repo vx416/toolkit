@@ -54,4 +54,16 @@ echo "Installing Redis tools..."
 brew install redis || { echo "Redis installation failed."; exit 1; }
 redis-cli --version && echo "Redis tools installed successfully!"
 
+# 安裝 vargant
+if ! command -v vagrant &> /dev/null; then
+    echo "正在安裝 Vagrant..."
+    brew install vagrant
+else
+    echo "Vagrant 已安裝，檢查更新..."
+    brew tap hashicorp/tap
+    brew install hashicorp/tap/hashicorp-vagrant
+    brew install qemu
+    vagrant plugin install vagrant-qemu
+fi
+
 echo "Setup complete! Restart your terminal to ensure all changes take effect."

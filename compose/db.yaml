@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   mysql:
     container_name: mysql
@@ -13,6 +11,7 @@ services:
       MYSQL_PASSWORD: test
     ports:
       - 127.0.0.1:3306:3306
+    # command: ["--innodb_buffer_pool_size=300000"]
 
   mongo:
     container_name: mongo
@@ -44,5 +43,3 @@ networks:
   host:
     name: host
     external: true
-  kafka:
-    driver: bridge

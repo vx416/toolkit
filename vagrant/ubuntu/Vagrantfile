@@ -1,0 +1,17 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.define "my-ubuntu-vm" do |vm|
+    vm.vm.box = "perk/ubuntu-2204-arm64"
+    vm.vm.box_version = "20230712"
+    vm.vm.provider "qemu" do |qemu|
+      qemu.ssh_port = "50022"
+      qemu.memory = "4096"
+      qemu.cpus = 2
+      qemu.arch = "aarch64"
+      qemu.machine = "virt"
+      qemu.cpu = "cortex-a57"  # 使用特定的 CPU 型號，避免 SME 錯誤
+    end
+  end  
+end

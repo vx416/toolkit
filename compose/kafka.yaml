@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   zk:
     container_name: zk

@@ -1,0 +1,24 @@
+services:
+  mysql-connector:
+    container_name: mysql-connector
+    image: quay.io/debezium/connect:3.0
+    ports:
+      - 8083:8083
+    environment:
+      BOOTSTRAP_SERVERS: localhost:9092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: my_connect_configs
+      OFFSET_STORAGE_TOPIC: my_connect_offsets
+      STATUS_STORAGE_TOPIC: my_connect_statuses
+      KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+    network_mode: host
+  debezium-ui:
+    container_name: my-debezium-ui
+    image: my-debezium-ui:latest
+    environment:
+      KAFKA_CONNECT_URIS: http://localhost:8083
+      PORT: 9000
+    ports:
+      - 9000:9000
+    network_mode: host
