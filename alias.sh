@@ -3,6 +3,7 @@ alias gb='git branch'
 alias glog='git log --oneline | head -n 10'
 alias gp='git push origin head'
 alias gpr='git pull origin --rebase'
+alias gcommit='git add . & git commit -m'
 # k8s
 alias kc='kubectl'
 # docker
