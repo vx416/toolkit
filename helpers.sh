@@ -2,7 +2,7 @@
 alias gb='git branch'
 alias glog='git log --oneline | head -n'
 alias gcm='git add . && git commit -m'
-alias gchm='git checkout'
+alias gch='git checkout'
 alias gcb='git checkout -b'
 
 gm2() {
