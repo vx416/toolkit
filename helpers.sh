@@ -7,7 +7,7 @@ alias gcb='git checkout -b'
 
 gm2() {
     branch=$(git branch --show-current) 
-    git pull origin $(branch) --rebase
+    git pull origin $(git branch --show-current) --rebase
     git checkout "$1" && git merge "$branch" 
 }
 
