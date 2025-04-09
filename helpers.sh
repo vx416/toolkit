@@ -1,16 +1,16 @@
 # git 
 alias gb='git branch'
 alias glog='git log --oneline | head -n'
-alias gcm='git commit -m'
+alias gcm='git add . && git commit -m'
 alias gchm='git checkout'
 alias gcb='git checkout -b'
 
 gm2() {
-    git pull origin --rebase && git merge "$1" && git checkout "$1"
+    git pull origin $(git branch --show-current) --rebase && git merge "$1" && git checkout "$1"
 }
 
-alias gp='git push origin head'
-alias gpr='git pull origin --rebase'
+alias gp='git push origin $(git branch --show-current)'
+alias gpr='git pull origin $(git branch --show-current) --rebase'
 # k8s
 alias kc='kubectl'
 alias kctx='kubectl config current-context'
