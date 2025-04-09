@@ -21,6 +21,10 @@ else
     brew upgrade asdf
 fi
 
+
+asdf plugin add golang https://github.com/asdf-community/asdf-golang.git
+asdf install golang 1.24.0
+asdf set golang 1.24.0
 # 安裝 GVM 和 Go 1.24.0
 echo "Installing GVM and Go 1.24.0..."
 bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer) || { echo "GVM installation failed."; exit 1; }
@@ -36,6 +40,13 @@ source "$HOME/.cargo/env"
 rustc --version && echo "Rust installed successfully!"
 echo '. "$HOME/.cargo/env"' >> ~/.zshrc  # 持久化 Rust 環境
 
+# 安裝  Node.js 和 npm
+echo "Installing Node.js and npm..."
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.zshrc
+nvm install --lts
+brew install pnpm
+
 # 安裝 OrbStack
 echo "Installing OrbStack as a Docker alternative..."
 brew install --cask orbstack || { echo "OrbStack installation failed."; exit 1; }
@@ -47,10 +58,18 @@ else
     exit 1
 fi
 
+# 安裝 k3d
+echo "Installing k3d..."
+curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v5.0.0 bash
+
 # 安裝 kubectl
 echo "Installing kubectl..."
 brew install kubectl || { echo "kubectl installation failed."; exit 1; }
 kubectl version --client && echo "kubectl installed successfully!"
+
+# 安裝 k9s
+brew install derailed/k9s/k9s
+
 
 # 安裝資料庫工具
 echo "Installing MySQL tools..."
@@ -82,8 +101,7 @@ fi
 # 安裝 Helm
 if ! command -v helm &> /dev/null; then
     echo "Installing Helm..."
-    asdf plugin add helm https://github.com/Antiarchitect/asdf-helm.git
-    asdf install helm 3.17.2
+    brew install helm || { echo "Helm installation failed."; exit 1; }
     helm version
 else
     helm version
@@ -92,9 +110,14 @@ fi
 # 安裝 protocol buffer 
 if ! command -v protoc &> /dev/null; then
     echo "Installing Protocol Buffers..."
-    asdf plugin add protoc https://github.com/paxosglobal/asdf-protoc.git
-    asdf install protoc 30.2
-    asdf set protoc 30.2 || { echo "Protocol Buffers installation failed."; exit 1; }
+    mkdir -p ~/tools/protoc30.2
+
+    curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v30.2/protoc-30.2-osx-aarch_64.zip
+    unzip protoc-30.2-osx-aarch_64.zip -d ~/tools/protoc30.2
+    echo 'export PATH="$HOME/tools/protoc30.2/bin:$PATH"' >> ~/.zshrc
+    source ~/.zshrc
+    protoc --version
+
     # https://grpc.io/docs/languages/go/quickstart/
     # install Go plugins for the protocol compiler, protoc-gen-go for generate message, protoc-gen-go-grpc for generate service
     go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.2

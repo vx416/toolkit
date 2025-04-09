@@ -1,13 +1,21 @@
 # git 
 alias gb='git branch'
-alias glog='git log --oneline | head -n 10'
+alias glog='git log --oneline | head -n'
+alias gcm='git commit -m'
+alias gchm='git checkout'
+alias gcb='git checkout -b'
+
+gm2() {
+    git pull origin --rebase && git merge "$1" && git checkout "$1"
+}
+
 alias gp='git push origin head'
 alias gpr='git pull origin --rebase'
-alias gcommit='git add . & git commit -m'
 # k8s
 alias kc='kubectl'
+alias kctx='kubectl config current-context'
 # docker
-alias dockerprune='docker container prune --force'
+alias dcprune='docker container prune --force'
 
 # Function to handle cursor cd command
 cursor_cd() {

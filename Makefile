@@ -9,6 +9,8 @@ run-mysql:
 run-kafka:
 	docker-compose -f compose/kafka.yaml --project-name kafka up -d
 
+run-mongo:
+	docker-compose -f compose/db.yaml up -d mongo
 
 run-mysql-cdc:
 	docker-compose -f compose/cdc.yaml up -d mysql-connector
