@@ -2,11 +2,13 @@
 alias gb='git branch'
 alias glog='git log --oneline | head -n'
 alias gcm='git add . && git commit -m'
-alias gch='git checkout'
+alias gc='git checkout'
 alias gcb='git checkout -b'
 
 gm2() {
-    git pull origin $(git branch --show-current) --rebase && git merge "$1" && git checkout "$1"
+    branch=$(git branch --show-current) 
+    git pull origin $(branch) --rebase
+    git checkout "$1" && git merge "$branch" 
 }
 
 alias gp='git push origin $(git branch --show-current)'
